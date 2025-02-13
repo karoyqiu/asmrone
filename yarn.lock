@@ -177,6 +177,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.8.7":
+  version: 7.26.7
+  resolution: "@babel/runtime@npm:7.26.7"
+  dependencies:
+    regenerator-runtime: "npm:^0.14.0"
+  checksum: 10/c7a661a6836b332d9d2e047cba77ba1862c1e4f78cec7146db45808182ef7636d8a7170be9797e5d8fd513180bffb9fa16f6ca1c69341891efec56113cf22bfc
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.25.9, @babel/template@npm:^7.26.8":
   version: 7.26.8
   resolution: "@babel/template@npm:7.26.8"
@@ -740,12 +749,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tauri-apps/plugin-opener@npm:^2":
-  version: 2.2.5
-  resolution: "@tauri-apps/plugin-opener@npm:2.2.5"
+"@tauri-apps/plugin-http@npm:~2":
+  version: 2.3.0
+  resolution: "@tauri-apps/plugin-http@npm:2.3.0"
   dependencies:
     "@tauri-apps/api": "npm:^2.0.0"
-  checksum: 10/b3a7b854176ad66fd4eb060b45b3cb85a5b2d4532ee383535fc5b7f2d4c16943e5ef3830b64470c43f175425481aacdd389a256b924f1f9bbf1a0338cde4a037
+  checksum: 10/af78763b507cdae0868560d459ef4b50f6e246e79dd6ac80de8cf71055939592d4c59dd625a668adb6642d5fcf2b62b7a143f5402d71a626cf13356b7eec9979
   languageName: node
   linkType: hard
 
@@ -846,6 +855,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-transition-group@npm:^4.4.1":
+  version: 4.4.12
+  resolution: "@types/react-transition-group@npm:4.4.12"
+  peerDependencies:
+    "@types/react": "*"
+  checksum: 10/ea14bc84f529a3887f9954b753843820ac8a3c49fcdfec7840657ecc6a8800aad98afdbe4b973eb96c7252286bde38476fcf64b1c09527354a9a9366e516d9a2
+  languageName: node
+  linkType: hard
+
 "@types/react@npm:^18.3.1":
   version: 18.3.18
   resolution: "@types/react@npm:18.3.18"
@@ -921,7 +939,7 @@ __metadata:
   dependencies:
     "@tauri-apps/api": "npm:^2"
     "@tauri-apps/cli": "npm:^2"
-    "@tauri-apps/plugin-opener": "npm:^2"
+    "@tauri-apps/plugin-http": "npm:~2"
     "@trivago/prettier-plugin-sort-imports": "npm:^5.2.2"
     "@types/react": "npm:^18.3.1"
     "@types/react-dom": "npm:^18.3.1"
@@ -930,6 +948,9 @@ __metadata:
     prettier: "npm:^3.5.0"
     prettier-plugin-organize-attributes: "npm:^1.0.0"
     prettier-plugin-tailwindcss: "npm:^0.6.11"
+    primeflex: "npm:^3.3.1"
+    primeicons: "npm:^7.0.0"
+    primereact: "npm:^10.9.2"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     typescript: "npm:~5.6.2"
@@ -1058,6 +1079,16 @@ __metadata:
     supports-color:
       optional: true
   checksum: 10/1847944c2e3c2c732514b93d11886575625686056cd765336212dc15de2d2b29612b6cd80e1afba767bb8e1803b778caf9973e98169ef1a24a7a7009e1820367
+  languageName: node
+  linkType: hard
+
+"dom-helpers@npm:^5.0.1":
+  version: 5.2.1
+  resolution: "dom-helpers@npm:5.2.1"
+  dependencies:
+    "@babel/runtime": "npm:^7.8.7"
+    csstype: "npm:^3.0.2"
+  checksum: 10/bed2341adf8864bf932b3289c24f35fdd99930af77df46688abf2d753ff291df49a15850c874d686d9be6ec4e1c6835673906e64dbd8b2839d227f117a11fd41
   languageName: node
   linkType: hard
 
@@ -1420,7 +1451,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.1.0":
+"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -1622,6 +1653,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"object-assign@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "object-assign@npm:4.1.1"
+  checksum: 10/fcc6e4ea8c7fe48abfbb552578b1c53e0d194086e2e6bbbf59e0a536381a292f39943c6e9628af05b5528aa5e3318bb30d6b2e53cadaf5b8fe9e12c4b69af23f
+  languageName: node
+  linkType: hard
+
 "p-map@npm:^7.0.2":
   version: 7.0.3
   resolution: "p-map@npm:7.0.3"
@@ -1756,6 +1794,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"primeflex@npm:^3.3.1":
+  version: 3.3.1
+  resolution: "primeflex@npm:3.3.1"
+  checksum: 10/5f35983c3040c7eb0a3b4b823b685f7b64e4bfc3ef70047f1f547a869c46df939680c368fa0b29e5e138c4d35360b67211013c2c80dbfa661f3a138195ca8182
+  languageName: node
+  linkType: hard
+
+"primeicons@npm:^7.0.0":
+  version: 7.0.0
+  resolution: "primeicons@npm:7.0.0"
+  checksum: 10/ff1d698a4d5932105393cd3288c6b1fd92ad30b6fbce1b49de86bcc1917d74d6769c12061d43aa8657fe52ac79d9336527f0708d8c5a0347a1ddcd3e47d0eb73
+  languageName: node
+  linkType: hard
+
+"primereact@npm:^10.9.2":
+  version: 10.9.2
+  resolution: "primereact@npm:10.9.2"
+  dependencies:
+    "@types/react-transition-group": "npm:^4.4.1"
+    react-transition-group: "npm:^4.4.1"
+  peerDependencies:
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10/f7c2c939e5c2ac62fbfe118e3d31f97e215e8839547db1206be5b62e3ee6dec98e9e51cbf366170946ae0ce3191ce453fbf7555f6668c3c887f28f5a22e89a88
+  languageName: node
+  linkType: hard
+
 "proc-log@npm:^5.0.0":
   version: 5.0.0
   resolution: "proc-log@npm:5.0.0"
@@ -1773,6 +1842,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"prop-types@npm:^15.6.2":
+  version: 15.8.1
+  resolution: "prop-types@npm:15.8.1"
+  dependencies:
+    loose-envify: "npm:^1.4.0"
+    object-assign: "npm:^4.1.1"
+    react-is: "npm:^16.13.1"
+  checksum: 10/7d959caec002bc964c86cdc461ec93108b27337dabe6192fb97d69e16a0c799a03462713868b40749bfc1caf5f57ef80ac3e4ffad3effa636ee667582a75e2c0
+  languageName: node
+  linkType: hard
+
 "react-dom@npm:^18.3.1":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
@@ -1785,10 +1865,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-is@npm:^16.13.1":
+  version: 16.13.1
+  resolution: "react-is@npm:16.13.1"
+  checksum: 10/5aa564a1cde7d391ac980bedee21202fc90bdea3b399952117f54fb71a932af1e5902020144fb354b4690b2414a0c7aafe798eb617b76a3d441d956db7726fdf
+  languageName: node
+  linkType: hard
+
 "react-refresh@npm:^0.14.2":
   version: 0.14.2
   resolution: "react-refresh@npm:0.14.2"
   checksum: 10/512abf97271ab8623486061be04b608c39d932e3709f9af1720b41573415fa4993d0009fa5138b6705b60a98f4102f744d4e26c952b14f41a0e455521c6be4cc
+  languageName: node
+  linkType: hard
+
+"react-transition-group@npm:^4.4.1":
+  version: 4.4.5
+  resolution: "react-transition-group@npm:4.4.5"
+  dependencies:
+    "@babel/runtime": "npm:^7.5.5"
+    dom-helpers: "npm:^5.0.1"
+    loose-envify: "npm:^1.4.0"
+    prop-types: "npm:^15.6.2"
+  peerDependencies:
+    react: ">=16.6.0"
+    react-dom: ">=16.6.0"
+  checksum: 10/ca32d3fd2168c976c5d90a317f25d5f5cd723608b415fb3b9006f9d793c8965c619562d0884503a3e44e4b06efbca4fdd1520f30e58ca3e00a0890e637d55419
   languageName: node
   linkType: hard
 
@@ -1798,6 +1900,13 @@ __metadata:
   dependencies:
     loose-envify: "npm:^1.1.0"
   checksum: 10/261137d3f3993eaa2368a83110466fc0e558bc2c7f7ae7ca52d94f03aac945f45146bd85e5f481044db1758a1dbb57879e2fcdd33924e2dde1bdc550ce73f7bf
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.14.0":
+  version: 0.14.1
+  resolution: "regenerator-runtime@npm:0.14.1"
+  checksum: 10/5db3161abb311eef8c45bcf6565f4f378f785900ed3945acf740a9888c792f75b98ecb77f0775f3bf95502ff423529d23e94f41d80c8256e8fa05ed4b07cf471
   languageName: node
   linkType: hard
 

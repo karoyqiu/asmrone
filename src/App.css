@@ -1,0 +1,7 @@
+@import 'primereact/resources/themes/lara-dark-blue/theme.css';
+@import 'primeflex/primeflex.css';
+@import 'primeicons/primeicons.css';
+
+html {
+  font-size: 87.5%;
+}

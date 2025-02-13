@@ -1,3 +1,4 @@
+import { PrimeReactProvider } from 'primereact/api';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
@@ -13,6 +14,8 @@ if (!import.meta.env.DEV) {
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <PrimeReactProvider>
+      <App />
+    </PrimeReactProvider>
   </React.StrictMode>,
 );
