@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    asmrone_lib::run()
+  asmrone_lib::run()
 }
