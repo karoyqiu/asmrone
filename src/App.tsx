@@ -55,7 +55,7 @@ function App() {
   const hasChecked = !!checked && Object.values(checked).some((value) => value.checked);
 
   const id = useMemo(() => {
-    let id = rjid.toUpperCase();
+    let id = rjid.trim().toUpperCase();
 
     if (id.startsWith('RJ')) {
       id = id.substring(2);

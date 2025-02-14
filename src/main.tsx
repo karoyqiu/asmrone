@@ -14,7 +14,7 @@ if (!import.meta.env.DEV) {
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <PrimeReactProvider>
+    <PrimeReactProvider value={{ nonce: 'ss8Pp2gtzJFjs8y9GAtSS' }}>
       <App />
     </PrimeReactProvider>
   </React.StrictMode>,
