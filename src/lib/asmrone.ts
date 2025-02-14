@@ -1,6 +1,7 @@
-import { BaseDirectory, join } from '@tauri-apps/api/path';
+import { BaseDirectory, appConfigDir, join } from '@tauri-apps/api/path';
 import { mkdir, writeTextFile } from '@tauri-apps/plugin-fs';
 import { fetch } from '@tauri-apps/plugin-http';
+import { Command } from '@tauri-apps/plugin-shell';
 
 export type Track = {
   gid: string;
@@ -78,7 +79,13 @@ const makeFullPath = (track: Track, parent: string) => {
   }
 };
 
-export const download = async (tracks: Track[], dir: string, proxy: string | null) => {
+export const download = async (
+  tracks: Track[],
+  dir: string,
+  proxy: string | null,
+  onProgress: (gid: string, progress: string) => void,
+  onFinish: (code: number) => void,
+) => {
   const lines: string[] = [];
   let subdir = '';
 
@@ -90,8 +97,7 @@ export const download = async (tracks: Track[], dir: string, proxy: string | nul
   }
 
   if (!subdir) {
-    console.error('No work info.');
-    return;
+    throw new Error('No work info');
   }
 
   let fullDir = await join(dir, subdir);
@@ -100,7 +106,6 @@ export const download = async (tracks: Track[], dir: string, proxy: string | nul
     if ('mediaDownloadUrl' in track) {
       lines.push(track.mediaDownloadUrl);
       lines.push(`  gid=${track.gid}`);
-      lines.push(`  dir=${fullDir}`);
       lines.push(`  out=${track.fullPath}`);
       lines.push('');
     }
@@ -108,4 +113,65 @@ export const download = async (tracks: Track[], dir: string, proxy: string | nul
 
   await mkdir('.', { baseDir: BaseDirectory.AppConfig, recursive: true });
   await writeTextFile('aria2c.input', lines.join('\n'), { baseDir: BaseDirectory.AppConfig });
+
+  const input = await join(await appConfigDir(), 'aria2c.input');
+  const args = [
+    '-d',
+    fullDir,
+    '-i',
+    input,
+    '-c',
+    '--max-connection-per-server=16',
+    '--min-split-size=1M',
+    '--allow-overwrite',
+    '--auto-file-renaming=false',
+    '--deferred-input',
+    '--file-allocation=falloc',
+    '--optimize-concurrent-downloads',
+    '--enable-color=false',
+    '--log-level=error',
+    '--console-log-level=error',
+    '--truncate-console-readout=false',
+  ];
+
+  if (proxy) {
+    args.push(`--all-proxy=${proxy}`);
+  }
+
+  const command = Command.sidecar('binaries/aria2c', args);
+  command.stderr.on('data', (value) => {
+    console.debug('aria2 stderr', value);
+    parseDownloadProgress(value, tracks, onProgress);
+  });
+  command.stdout.on('data', (value) => {
+    console.debug('aria2 stdout', value);
+    parseDownloadProgress(value, tracks, onProgress);
+  });
+  command.on('close', (e) => {
+    console.debug('aria2 exited', e);
+    onFinish(e.code ?? -1);
+  });
+
+  return command.spawn();
+};
+
+const parseDownloadProgress = (
+  line: string,
+  tracks: Track[],
+  onProgress: (gid: string, progress: string) => void,
+) => {
+  const parts = line.split('[');
+
+  for (const part of parts) {
+    if (!part.startsWith('#')) {
+      continue;
+    }
+
+    const [nnn, progress] = part.trim().slice(1, -1).split(' ', 2);
+    const track = tracks.find((value) => value.gid.startsWith(nnn));
+
+    if (track) {
+      onProgress(track.gid, progress);
+    }
+  }
 };

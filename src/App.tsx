@@ -1,3 +1,4 @@
+import type { Child } from '@tauri-apps/plugin-shell';
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
 import { useDebounce, useLocalStorage } from 'primereact/hooks';
@@ -36,6 +37,7 @@ function App() {
   const [dir] = useLocalStorage('', 'dir');
   const [proxy] = useLocalStorage('', 'proxy');
   const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
+  const [child, setChild] = useState<Child>();
   const hasChecked = !!checked && Object.values(checked).some((value) => value.checked);
 
   useEffect(() => {
@@ -79,16 +81,26 @@ function App() {
         <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
         <Button
           className="flex-1"
-          label="Download"
+          label={child ? 'Cancel' : 'Download'}
           icon={PrimeIcons.DOWNLOAD}
           disabled={tracks.length === 0 || !hasChecked}
           onClick={async () => {
-            if (checked) {
+            if (child) {
+              console.warn('Cancelling');
+              await child.kill();
+            } else if (checked) {
               const selected: Track[] = [];
               flatSelected(selected, tracks, checked);
 
               if (selected.length > 0) {
-                await download(selected, dir, proxyOnDownload ? proxy : null);
+                const c = await download(
+                  selected,
+                  dir,
+                  proxyOnDownload ? proxy : null,
+                  (gid, progress) => console.log(gid, progress),
+                  () => setChild(undefined),
+                );
+                setChild(c);
               }
             }
           }}

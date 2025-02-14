@@ -6,6 +6,7 @@
   "permissions": [
     "core:default",
     "dialog:allow-open",
+    "shell:allow-kill",
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [{ "path": "$APPCONFIG/aria2c.input" }]
