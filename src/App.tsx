@@ -1,6 +1,6 @@
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
-import { useDebounce } from 'primereact/hooks';
+import { useDebounce, useLocalStorage } from 'primereact/hooks';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { InputText } from 'primereact/inputtext';
@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react';
 
 import './App.css';
 import { Track, getTracks } from './lib/asmrone';
+import SettingsDialog from './ui/SettingsDialog';
 import TrackTable from './ui/TrackTable';
 
 function App() {
@@ -17,6 +18,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [checked, setChecked] = useState<TreeCheckboxSelectionKeys | null>(null);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [dir] = useLocalStorage('', 'dir');
+  const [proxy] = useLocalStorage('', 'proxy');
+  const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
 
   useEffect(() => {
     let id = rjid.toUpperCase();
@@ -27,14 +32,14 @@ function App() {
 
     if (id) {
       setLoading(true);
-      getTracks(id)
+      getTracks(id, proxy)
         .then(setTracks)
         .catch(console.error)
         .finally(() => setLoading(false));
     } else {
       setTracks([]);
     }
-  }, [rjid]);
+  }, [rjid, proxy]);
 
   return (
     <main className="flex flex-column gap-2 h-full p-2">
@@ -55,7 +60,16 @@ function App() {
       <ScrollPanel className="flex-auto min-h-0 border-200 border-1 border-round">
         <TrackTable tracks={tracks} loading={loading} checked={checked} onCheck={setChecked} />
       </ScrollPanel>
-      <Button label="Download" icon={PrimeIcons.DOWNLOAD} disabled={tracks.length === 0} />
+      <div className="flex gap-2">
+        <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
+        <Button
+          className="flex-1"
+          label="Download"
+          icon={PrimeIcons.DOWNLOAD}
+          disabled={tracks.length === 0}
+        />
+      </div>
+      <SettingsDialog visible={settingsVisible} onHide={() => setSettingsVisible(false)} />
     </main>
   );
 }

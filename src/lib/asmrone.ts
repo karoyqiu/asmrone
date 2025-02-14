@@ -38,7 +38,7 @@ type Work = {
   source_type: string;
 };
 
-export const getTracks = async (rjid: string) => {
+export const getTracks = async (rjid: string, proxy: string) => {
   const resp = await fetch(`https://api.asmr.one/api/tracks/${rjid}?v=1`, {
     method: 'GET',
     referrer: 'https://www.asmr.one',
@@ -47,9 +47,7 @@ export const getTracks = async (rjid: string) => {
       'User-Agent':
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',
     },
-    proxy: {
-      all: 'http://127.0.0.1:7890',
-    },
+    proxy: proxy ? { all: proxy } : undefined,
   });
 
   const tracks = await resp.json();

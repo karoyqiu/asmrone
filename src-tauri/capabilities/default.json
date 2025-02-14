@@ -5,9 +5,27 @@
   "windows": ["main"],
   "permissions": [
     "core:default",
+    "dialog:allow-open",
     {
       "identifier": "http:default",
-      "allow": [{ "url": "https://asmr.one" }, { "url": "https://*.asmr.one" }]
+      "allow": [
+        {
+          "url": "https://asmr.one"
+        },
+        {
+          "url": "https://*.asmr.one"
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "sidecar": true,
+          "name": "binaries/aria2c",
+          "args": true
+        }
+      ]
     }
   ]
 }
