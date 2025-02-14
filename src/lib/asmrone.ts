@@ -10,7 +10,7 @@ export type Folder = {
 };
 
 export type AudioTrack = {
-  type: 'image';
+  type: 'audio';
   duration: number;
   streamLowQualityUrl?: string;
 } & TrackBase;
@@ -53,5 +53,10 @@ export const getTracks = async (rjid: string) => {
   });
 
   const tracks = await resp.json();
+
+  if (!Array.isArray(tracks)) {
+    throw tracks;
+  }
+
   return tracks as Track[];
 };

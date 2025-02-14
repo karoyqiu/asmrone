@@ -4,4 +4,14 @@
 
 html {
   font-size: 87.5%;
+  height: 100vh;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#root {
+  height: 100%;
 }
