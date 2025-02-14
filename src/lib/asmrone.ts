@@ -1,7 +1,11 @@
+import { BaseDirectory, join } from '@tauri-apps/api/path';
+import { mkdir, writeTextFile } from '@tauri-apps/plugin-fs';
 import { fetch } from '@tauri-apps/plugin-http';
 
 export type Track = {
+  gid: string;
   title: string;
+  fullPath: string;
 } & (Folder | AudioTrack | ImageTrack | TextTrack);
 
 export type Folder = {
@@ -50,11 +54,58 @@ export const getTracks = async (rjid: string, proxy: string) => {
     proxy: proxy ? { all: proxy } : undefined,
   });
 
-  const tracks = await resp.json();
+  const tracks = (await resp.json()) as Track[];
 
   if (!Array.isArray(tracks)) {
     throw tracks;
   }
 
-  return tracks as Track[];
+  for (const track of tracks) {
+    makeFullPath(track, '');
+  }
+
+  return tracks;
+};
+
+const makeFullPath = (track: Track, parent: string) => {
+  track.gid = crypto.randomUUID().replaceAll('-', '').substring(0, 16);
+  track.fullPath = parent ? `${parent}/${track.title}` : track.title;
+
+  if (track.type === 'folder') {
+    for (const child of track.children) {
+      makeFullPath(child, track.fullPath);
+    }
+  }
+};
+
+export const download = async (tracks: Track[], dir: string, proxy: string | null) => {
+  const lines: string[] = [];
+  let subdir = '';
+
+  for (const track of tracks) {
+    if ('work' in track) {
+      subdir = `${track.work.source_id} - ${track.workTitle}`;
+      break;
+    }
+  }
+
+  if (!subdir) {
+    console.error('No work info.');
+    return;
+  }
+
+  let fullDir = await join(dir, subdir);
+
+  for (const track of tracks) {
+    if ('mediaDownloadUrl' in track) {
+      lines.push(track.mediaDownloadUrl);
+      lines.push(`  gid=${track.gid}`);
+      lines.push(`  dir=${fullDir}`);
+      lines.push(`  out=${track.fullPath}`);
+      lines.push('');
+    }
+  }
+
+  await mkdir('.', { baseDir: BaseDirectory.AppConfig, recursive: true });
+  await writeTextFile('aria2c.input', lines.join('\n'), { baseDir: BaseDirectory.AppConfig });
 };

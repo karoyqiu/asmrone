@@ -12,8 +12,8 @@ type TrackNode = Omit<TreeNode, 'children' | 'data'> & {
 
 const trackToNode = (track: Track) => {
   const node: TrackNode = { label: track.title, data: track };
-  node.id = 'hash' in track ? track.hash : track.title;
-  node.key = node.id;
+  node.id = track.gid;
+  node.key = track.gid;
 
   switch (track.type) {
     case 'folder':

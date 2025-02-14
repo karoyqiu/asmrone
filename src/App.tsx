@@ -9,9 +9,23 @@ import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
 import { useEffect, useState } from 'react';
 
 import './App.css';
-import { Track, getTracks } from './lib/asmrone';
+import { Track, download, getTracks } from './lib/asmrone';
 import SettingsDialog from './ui/SettingsDialog';
 import TrackTable from './ui/TrackTable';
+
+const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxSelectionKeys) => {
+  for (const track of tracks) {
+    const tc = checked[track.gid];
+
+    if (tc?.checked || tc?.partialChecked) {
+      if (track.type === 'folder') {
+        flatSelected(selected, track.children, checked);
+      } else {
+        selected.push(track);
+      }
+    }
+  }
+};
 
 function App() {
   const [inputRjid, rjid, setRjid] = useDebounce('', 500);
@@ -22,6 +36,7 @@ function App() {
   const [dir] = useLocalStorage('', 'dir');
   const [proxy] = useLocalStorage('', 'proxy');
   const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
+  const hasChecked = !!checked && Object.values(checked).some((value) => value.checked);
 
   useEffect(() => {
     let id = rjid.toUpperCase();
@@ -66,7 +81,17 @@ function App() {
           className="flex-1"
           label="Download"
           icon={PrimeIcons.DOWNLOAD}
-          disabled={tracks.length === 0}
+          disabled={tracks.length === 0 || !hasChecked}
+          onClick={async () => {
+            if (checked) {
+              const selected: Track[] = [];
+              flatSelected(selected, tracks, checked);
+
+              if (selected.length > 0) {
+                await download(selected, dir, proxyOnDownload ? proxy : null);
+              }
+            }
+          }}
         />
       </div>
       <SettingsDialog visible={settingsVisible} onHide={() => setSettingsVisible(false)} />

@@ -7,6 +7,14 @@
     "core:default",
     "dialog:allow-open",
     {
+      "identifier": "fs:allow-write-text-file",
+      "allow": [{ "path": "$APPCONFIG/aria2c.input" }]
+    },
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [{ "path": "$APPCONFIG" }]
+    },
+    {
       "identifier": "http:default",
       "allow": [
         {
