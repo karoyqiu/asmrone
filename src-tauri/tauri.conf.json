@@ -13,8 +13,9 @@
     "windows": [
       {
         "title": "asmr.one",
-        "width": 1200,
-        "height": 700
+        "width": 700,
+        "height": 1000,
+        "center": true
       }
     ],
     "security": {
