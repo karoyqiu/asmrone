@@ -28,11 +28,12 @@ export type TextTrack = {
   type: 'text';
 } & TrackBase;
 
-type TrackBase = {
+export type TrackBase = {
   hash: string;
   mediaStreamUrl: string;
   mediaDownloadUrl: string;
   size: number;
+  progress?: string;
   work: Work;
   workTitle: string;
 };

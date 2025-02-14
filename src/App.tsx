@@ -7,7 +7,7 @@ import { InputIcon } from 'primereact/inputicon';
 import { InputText } from 'primereact/inputtext';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import './App.css';
 import { Track, download, getTracks } from './lib/asmrone';
@@ -28,6 +28,16 @@ const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxS
   }
 };
 
+const flatMap = (map: Map<string, Track>, tracks: Track[]) => {
+  for (const track of tracks) {
+    map.set(track.gid, track);
+
+    if (track.type === 'folder') {
+      flatMap(map, track.children);
+    }
+  }
+};
+
 function App() {
   const [inputRjid, rjid, setRjid] = useDebounce('', 500);
   const [loading, setLoading] = useState(false);
@@ -39,6 +49,12 @@ function App() {
   const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
   const [child, setChild] = useState<Child>();
   const hasChecked = !!checked && Object.values(checked).some((value) => value.checked);
+
+  const trackMap = useMemo(() => {
+    const map = new Map<string, Track>();
+    flatMap(map, tracks);
+    return map;
+  }, [tracks]);
 
   useEffect(() => {
     let id = rjid.toUpperCase();
@@ -97,7 +113,13 @@ function App() {
                   selected,
                   dir,
                   proxyOnDownload ? proxy : null,
-                  (gid, progress) => console.log(gid, progress),
+                  (gid, progress) => {
+                    const track = trackMap.get(gid);
+
+                    if (track && track.type !== 'folder') {
+                      track.progress = progress;
+                    }
+                  },
                   () => setChild(undefined),
                 );
                 setChild(c);

@@ -4,6 +4,7 @@ import type { TreeNode } from 'primereact/treenode';
 import { useMemo } from 'react';
 
 import type { Track } from '../lib/asmrone';
+import { formatSize } from '../lib/format';
 
 type TrackNode = Omit<TreeNode, 'children' | 'data'> & {
   children?: TrackNode[];
@@ -17,6 +18,7 @@ const trackToNode = (track: Track) => {
 
   switch (track.type) {
     case 'folder':
+      node.label = track.title;
       node.icon = PrimeIcons.FOLDER;
       node.expanded = true;
 
@@ -26,13 +28,16 @@ const trackToNode = (track: Track) => {
 
       break;
     case 'audio':
+      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
       node.icon = PrimeIcons.VOLUME_UP;
       break;
     case 'image':
+      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
       node.icon = PrimeIcons.IMAGE;
       break;
     default:
     case 'text':
+      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
       node.icon = PrimeIcons.FILE;
       break;
   }
