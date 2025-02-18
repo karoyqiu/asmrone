@@ -33,7 +33,7 @@ export type TrackBase = {
   mediaStreamUrl: string;
   mediaDownloadUrl: string;
   size: number;
-  progress?: string;
+  downloaded: number;
   work: Work;
   workTitle: string;
 };
@@ -77,14 +77,18 @@ const makeFullPath = (track: Track, parent: string) => {
     for (const child of track.children) {
       makeFullPath(child, track.fullPath);
     }
+  } else {
+    track.downloaded = 0;
   }
 };
+
+type OnProgress = (gid: string, downloaded: number, total: number) => void;
 
 export const download = async (
   tracks: Track[],
   dir: string,
   proxy: string | null,
-  onProgress: (gid: string, progress: string) => void,
+  onProgress: OnProgress,
   onFinish: (code: number) => void,
 ) => {
   const lines: string[] = [];
@@ -133,6 +137,7 @@ export const download = async (
     '--log-level=error',
     '--console-log-level=error',
     '--truncate-console-readout=false',
+    '--human-readable=false',
   ];
 
   if (proxy) {
@@ -141,26 +146,19 @@ export const download = async (
 
   const command = Command.sidecar('binaries/aria2c', args);
   command.stderr.on('data', (value) => {
-    console.debug('aria2 stderr', value);
     parseDownloadProgress(value, tracks, onProgress);
   });
   command.stdout.on('data', (value) => {
-    console.debug('aria2 stdout', value);
     parseDownloadProgress(value, tracks, onProgress);
   });
   command.on('close', (e) => {
-    console.debug('aria2 exited', e);
     onFinish(e.code ?? -1);
   });
 
   return command.spawn();
 };
 
-const parseDownloadProgress = (
-  line: string,
-  tracks: Track[],
-  onProgress: (gid: string, progress: string) => void,
-) => {
+const parseDownloadProgress = (line: string, tracks: Track[], onProgress: OnProgress) => {
   const parts = line.split('[');
 
   for (const part of parts) {
@@ -172,7 +170,8 @@ const parseDownloadProgress = (
     const track = tracks.find((value) => value.gid.startsWith(nnn));
 
     if (track) {
-      onProgress(track.gid, progress);
+      const [d, t] = progress.split('/');
+      onProgress(track.gid, parseInt(d, 10), parseInt(t, 10));
     }
   }
 };

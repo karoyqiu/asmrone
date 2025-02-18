@@ -5,13 +5,15 @@ import { useDebounce, useLocalStorage } from 'primereact/hooks';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { InputText } from 'primereact/inputtext';
+import { ProgressBar } from 'primereact/progressbar';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import { Toast } from 'primereact/toast';
 import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import './App.css';
 import { Track, download, getTracks } from './lib/asmrone';
+import { formatSize } from './lib/format';
 import SettingsDialog from './ui/SettingsDialog';
 import TrackTable from './ui/TrackTable';
 
@@ -29,22 +31,14 @@ const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxS
   }
 };
 
-const flatMap = (map: Map<string, Track>, tracks: Track[]) => {
-  for (const track of tracks) {
-    map.set(track.gid, track);
-
-    if (track.type === 'folder') {
-      flatMap(map, track.children);
-    }
-  }
-};
-
 function App() {
   const [inputRjid, rjid, setRjid] = useDebounce('', 500);
   const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
   const [checked, setChecked] = useState<TreeCheckboxSelectionKeys | null>(null);
   const [child, setChild] = useState<Child>();
+  const [total, setTotal] = useState(0);
+  const [downloaded, setDownloaded] = useState(0);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [dir] = useLocalStorage('', 'dir');
   const [proxy] = useLocalStorage('', 'proxy');
@@ -79,11 +73,34 @@ function App() {
     }
   }, [id]);
 
-  const trackMap = useMemo(() => {
+  const [selected, selectedMap] = useMemo(() => {
+    const sel: Track[] = [];
     const map = new Map<string, Track>();
-    flatMap(map, tracks);
-    return map;
-  }, [tracks]);
+
+    if (checked) {
+      flatSelected(sel, tracks, checked);
+
+      for (const s of sel) {
+        map.set(s.gid, s);
+      }
+    }
+
+    return [sel, map] as const;
+  }, [tracks, checked]);
+
+  const onProgress = useCallback(
+    (gid: string, downloaded: number) => {
+      const track = selectedMap.get(gid);
+
+      if (track && track.type !== 'folder') {
+        track.downloaded = downloaded;
+        setDownloaded(
+          selected.reduce((prev, track) => ('size' in track ? prev + track.downloaded : prev), 0),
+        );
+      }
+    },
+    [selected],
+  );
 
   useEffect(() => {
     if (id) {
@@ -127,6 +144,13 @@ function App() {
       <ScrollPanel className="flex-auto min-h-0 border-200 border-1 border-round">
         <TrackTable tracks={tracks} loading={loading} checked={checked} onCheck={setChecked} />
       </ScrollPanel>
+      <div className="font-medium text-lg text-900 mt-2">
+        {`${formatSize(downloaded)}/${formatSize(total)}`}
+      </div>
+      <ProgressBar
+        className="mb-2"
+        value={total > 0 ? Math.floor((downloaded * 100) / total) : 0}
+      />
       <div className="flex gap-2">
         <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
         <Button
@@ -136,25 +160,22 @@ function App() {
           disabled={tracks.length === 0 || !hasChecked}
           onClick={async () => {
             if (child) {
-              console.warn('Cancelling');
               await child.kill();
+              setChild(undefined);
             } else if (checked) {
-              const selected: Track[] = [];
-              flatSelected(selected, tracks, checked);
-
               if (selected.length > 0) {
+                setDownloaded(0);
+                setTotal(
+                  selected.reduce((prev, track) => ('size' in track ? prev + track.size : prev), 0),
+                );
+
                 const c = await download(
                   selected,
                   dir,
                   proxyOnDownload ? proxy : null,
-                  (gid, progress) => {
-                    const track = trackMap.get(gid);
-
-                    if (track && track.type !== 'folder') {
-                      track.progress = progress;
-                    }
-                  },
+                  onProgress,
                   () => {
+                    setDownloaded(total);
                     setChild(undefined);
                     setRecords((old) => ({ ...old, [id]: Date.now() }));
                   },
