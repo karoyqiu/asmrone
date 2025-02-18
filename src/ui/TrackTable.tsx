@@ -28,16 +28,16 @@ const trackToNode = (track: Track) => {
 
       break;
     case 'audio':
-      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
+      node.label = `${track.title} (${formatSize(track.size)})`;
       node.icon = PrimeIcons.VOLUME_UP;
       break;
     case 'image':
-      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
+      node.label = `${track.title} (${formatSize(track.size)})`;
       node.icon = PrimeIcons.IMAGE;
       break;
     default:
     case 'text':
-      node.label = `${track.title} (${track.progress ?? formatSize(track.size)})`;
+      node.label = `${track.title} (${formatSize(track.size)})`;
       node.icon = PrimeIcons.FILE;
       break;
   }
