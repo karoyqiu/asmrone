@@ -165,9 +165,12 @@ function App() {
             } else if (checked) {
               if (selected.length > 0) {
                 setDownloaded(0);
-                setTotal(
-                  selected.reduce((prev, track) => ('size' in track ? prev + track.size : prev), 0),
+
+                const t = selected.reduce(
+                  (prev, track) => ('size' in track ? prev + track.size : prev),
+                  0,
                 );
+                setTotal(t);
 
                 const c = await download(
                   selected,
@@ -175,7 +178,7 @@ function App() {
                   proxyOnDownload ? proxy : null,
                   onProgress,
                   () => {
-                    setDownloaded(total);
+                    setDownloaded(t);
                     setChild(undefined);
                     setRecords((old) => ({ ...old, [id]: Date.now() }));
                   },
