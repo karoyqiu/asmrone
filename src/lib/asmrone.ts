@@ -96,7 +96,7 @@ export const download = async (
 
   for (const track of tracks) {
     if ('work' in track) {
-      subdir = `${track.work.source_id} - ${track.workTitle}`;
+      subdir = `${track.work.source_id} - ${track.workTitle.replaceAll('/', '-').replaceAll('\\', '-')}`;
       break;
     }
   }
