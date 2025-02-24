@@ -82,6 +82,24 @@ const makeFullPath = (track: Track, parent: string) => {
   }
 };
 
+const fixWorkTitle = (title: string) => {
+  const replaces = [
+    ['/', '-'],
+    ['\\', '-'],
+    [',', '，'],
+    ['?', '？'],
+    ['!', '！'],
+  ] as const;
+
+  let s = title;
+
+  for (const r of replaces) {
+    s = s.replaceAll(r[0], r[1]);
+  }
+
+  return s;
+};
+
 type OnProgress = (gid: string, downloaded: number, total: number) => void;
 
 export const download = async (
@@ -96,7 +114,7 @@ export const download = async (
 
   for (const track of tracks) {
     if ('work' in track) {
-      subdir = `${track.work.source_id} - ${track.workTitle.replaceAll('/', '-').replaceAll('\\', '-')}`;
+      subdir = `${track.work.source_id} - ${fixWorkTitle(track.workTitle)}`;
       break;
     }
   }
@@ -159,6 +177,10 @@ export const download = async (
 };
 
 const parseDownloadProgress = (line: string, tracks: Track[], onProgress: OnProgress) => {
+  if (import.meta.env.DEV) {
+    console.debug('aria2c', line);
+  }
+
   const parts = line.split('[');
 
   for (const part of parts) {
