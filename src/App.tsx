@@ -1,3 +1,4 @@
+import { ProgressBarStatus, getCurrentWindow } from '@tauri-apps/api/window';
 import type { Child } from '@tauri-apps/plugin-shell';
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
@@ -9,7 +10,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import { Toast } from 'primereact/toast';
 import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import './App.css';
 import { Track, download, getTracks } from './lib/asmrone';
@@ -88,19 +89,16 @@ function App() {
     return [sel, map] as const;
   }, [tracks, checked]);
 
-  const onProgress = useCallback(
-    (gid: string, downloaded: number) => {
-      const track = selectedMap.get(gid);
+  const onProgress = (gid: string, downloaded: number) => {
+    const track = selectedMap.get(gid);
 
-      if (track && track.type !== 'folder') {
-        track.downloaded = downloaded;
-        setDownloaded(
-          selected.reduce((prev, track) => ('size' in track ? prev + track.downloaded : prev), 0),
-        );
-      }
-    },
-    [selected],
-  );
+    if (track && track.type !== 'folder') {
+      track.downloaded = downloaded;
+      setDownloaded(
+        selected.reduce((prev, track) => ('size' in track ? prev + track.downloaded : prev), 0),
+      );
+    }
+  };
 
   useEffect(() => {
     if (id) {
@@ -125,6 +123,13 @@ function App() {
     }
   }, [id, proxy]);
 
+  useEffect(() => {
+    getCurrentWindow().setProgressBar({
+      status: ProgressBarStatus.Normal,
+      progress: Math.round((downloaded * 100) / total),
+    });
+  }, [downloaded, total]);
+
   return (
     <main className="flex flex-column gap-2 h-full p-2">
       <div className="flex gap-2">
@@ -148,8 +153,8 @@ function App() {
         {`${formatSize(downloaded)}/${formatSize(total)}`}
       </div>
       <ProgressBar
-        className="mb-2"
-        value={total > 0 ? Math.floor((downloaded * 100) / total) : 0}
+        className="mb-2 flex-shrink-0"
+        value={total > 0 ? Math.round((downloaded * 100) / total) : 0}
       />
       <div className="flex gap-2">
         <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
@@ -181,6 +186,10 @@ function App() {
                     setDownloaded(t);
                     setChild(undefined);
                     setRecords((old) => ({ ...old, [id]: Date.now() }));
+                    setTimeout(
+                      () => getCurrentWindow().setProgressBar({ status: ProgressBarStatus.None }),
+                      1000,
+                    );
                   },
                 );
                 setChild(c);
