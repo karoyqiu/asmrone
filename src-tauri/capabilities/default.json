@@ -28,6 +28,16 @@
       ]
     },
     {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "sidecar": true,
+          "name": "binaries/ffmpeg",
+          "args": true
+        }
+      ]
+    },
+    {
       "identifier": "shell:allow-spawn",
       "allow": [
         {

@@ -13,7 +13,7 @@ import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import './App.css';
-import { Track, download, getTracks } from './lib/asmrone';
+import { Track, download, getTracks, normalizeAudios } from './lib/asmrone';
 import { formatSize } from './lib/format';
 import SettingsDialog from './ui/SettingsDialog';
 import TrackTable from './ui/TrackTable';
@@ -32,6 +32,9 @@ const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxS
   }
 };
 
+const finishLater = () =>
+  setTimeout(() => getCurrentWindow().setProgressBar({ status: ProgressBarStatus.None }), 1000);
+
 function App() {
   const [inputRjid, rjid, setRjid] = useDebounce('', 500);
   const [loading, setLoading] = useState(false);
@@ -44,6 +47,7 @@ function App() {
   const [dir] = useLocalStorage('', 'dir');
   const [proxy] = useLocalStorage('', 'proxy');
   const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
+  const [normalize] = useLocalStorage(false, 'normalize');
   const [records, setRecords] = useLocalStorage<Record<string, number>>({}, 'records');
   const toast = useRef<Toast>(null);
 
@@ -89,7 +93,7 @@ function App() {
     return [sel, map] as const;
   }, [tracks, checked]);
 
-  const onProgress = (gid: string, downloaded: number) => {
+  const onDownloadProgress = (gid: string, downloaded: number) => {
     const track = selectedMap.get(gid);
 
     if (track && track.type !== 'folder') {
@@ -98,6 +102,11 @@ function App() {
         selected.reduce((prev, track) => ('size' in track ? prev + track.downloaded : prev), 0),
       );
     }
+  };
+
+  const onNormalizationProgress = (finished: number, total: number) => {
+    setDownloaded(finished);
+    setTotal(total);
   };
 
   useEffect(() => {
@@ -150,7 +159,9 @@ function App() {
         <TrackTable tracks={tracks} loading={loading} checked={checked} onCheck={setChecked} />
       </ScrollPanel>
       <div className="font-medium text-lg text-900 mt-2">
-        {`${formatSize(downloaded)}/${formatSize(total)}`}
+        {total >= 1024
+          ? `${formatSize(downloaded)}/${formatSize(total)}`
+          : `${downloaded}/${total}`}
       </div>
       <ProgressBar
         className="mb-2 flex-shrink-0"
@@ -181,15 +192,19 @@ function App() {
                   selected,
                   dir,
                   proxyOnDownload ? proxy : null,
-                  onProgress,
+                  onDownloadProgress,
                   () => {
                     setDownloaded(t);
-                    setChild(undefined);
                     setRecords((old) => ({ ...old, [id]: Date.now() }));
-                    setTimeout(
-                      () => getCurrentWindow().setProgressBar({ status: ProgressBarStatus.None }),
-                      1000,
-                    );
+
+                    if (normalize) {
+                      normalizeAudios(selected, dir, onNormalizationProgress, finishLater).finally(
+                        () => setChild(undefined),
+                      );
+                    } else {
+                      setChild(undefined);
+                      finishLater();
+                    }
                   },
                 );
                 setChild(c);

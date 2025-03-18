@@ -1,7 +1,9 @@
-import { BaseDirectory, appConfigDir, join } from '@tauri-apps/api/path';
+import { invoke } from '@tauri-apps/api/core';
+import { BaseDirectory, appConfigDir, extname, join } from '@tauri-apps/api/path';
 import { mkdir, writeTextFile } from '@tauri-apps/plugin-fs';
 import { fetch } from '@tauri-apps/plugin-http';
 import { Command } from '@tauri-apps/plugin-shell';
+import pLimit from 'p-limit';
 
 export type Track = {
   gid: string;
@@ -100,16 +102,7 @@ const fixWorkTitle = (title: string) => {
   return s;
 };
 
-type OnProgress = (gid: string, downloaded: number, total: number) => void;
-
-export const download = async (
-  tracks: Track[],
-  dir: string,
-  proxy: string | null,
-  onProgress: OnProgress,
-  onFinish: (code: number) => void,
-) => {
-  const lines: string[] = [];
+const getFullDir = (tracks: Track[], dir: string) => {
   let subdir = '';
 
   for (const track of tracks) {
@@ -123,7 +116,20 @@ export const download = async (
     throw new Error('No work info');
   }
 
-  let fullDir = await join(dir, subdir);
+  return join(dir, subdir);
+};
+
+type OnDownloadProgress = (gid: string, downloaded: number, total: number) => void;
+
+export const download = async (
+  tracks: Track[],
+  dir: string,
+  proxy: string | null,
+  onProgress: OnDownloadProgress,
+  onFinish: (code: number) => void,
+) => {
+  const fullDir = await getFullDir(tracks, dir);
+  const lines: string[] = [];
 
   for (const track of tracks) {
     if ('mediaDownloadUrl' in track) {
@@ -176,7 +182,7 @@ export const download = async (
   return command.spawn();
 };
 
-const parseDownloadProgress = (line: string, tracks: Track[], onProgress: OnProgress) => {
+const parseDownloadProgress = (line: string, tracks: Track[], onProgress: OnDownloadProgress) => {
   if (import.meta.env.DEV) {
     console.debug('aria2c', line);
   }
@@ -196,4 +202,39 @@ const parseDownloadProgress = (line: string, tracks: Track[], onProgress: OnProg
       onProgress(track.gid, parseInt(d, 10), parseInt(t, 10));
     }
   }
+};
+
+const limit = pLimit(4);
+type OnNormalizationProgress = (finished: number, total: number) => void;
+
+export const normalizeAudios = async (
+  tracks: Track[],
+  dir: string,
+  onProgress?: OnNormalizationProgress,
+  onFinish?: () => void,
+) => {
+  const fullDir = await getFullDir(tracks, dir);
+  const audios = await invoke<string[]>('read_dir', { dir: fullDir });
+  onProgress?.(0, audios.length);
+
+  const promises = audios.map((audio) => limit(normalizeAudio, audio, audios.length, onProgress));
+  await Promise.all(promises);
+  onFinish?.();
+};
+
+const normalizeAudio = async (
+  audio: string,
+  total: number,
+  onProgress?: OnNormalizationProgress,
+) => {
+  const ext = await extname(audio);
+  const output = `${audio.slice(0, -ext.length)}norm.${ext}`;
+  const args = ['-v', 'quiet', '-i', audio, '-filter:a', 'dynaudnorm=f=150:g=13', output];
+
+  console.log('Running ffmpeg', args);
+  const command = Command.sidecar('binaries/ffmpeg', args);
+  await command.execute();
+  await invoke('rename', { from: output, to: audio });
+
+  onProgress?.(total - limit.activeCount - limit.pendingCount + 1, total);
 };

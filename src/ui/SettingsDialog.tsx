@@ -17,6 +17,7 @@ export default function SettingsDialog(props: SettingsDialogProps) {
   const [dir, setDir] = useLocalStorage('', 'dir');
   const [proxy, setProxy] = useLocalStorage('', 'proxy');
   const [proxyOnDownload, setProxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
+  const [normalize, setNormalize] = useLocalStorage(false, 'normalize');
   const id = useId();
 
   return (
@@ -44,7 +45,15 @@ export default function SettingsDialog(props: SettingsDialogProps) {
         </div>
         <div className="flex align-items-center justify-content-between">
           <label htmlFor={`${id}pod`}>Use proxy when downloading</label>
-          <InputSwitch checked={proxyOnDownload} onChange={(e) => setProxyOnDownload(e.value)} />
+          <InputSwitch
+            id={`${id}pod`}
+            checked={proxyOnDownload}
+            onChange={(e) => setProxyOnDownload(e.value)}
+          />
+        </div>
+        <div className="flex align-items-center justify-content-between">
+          <label htmlFor={`${id}n`}>Normalize audio files after being downloaded</label>
+          <InputSwitch id={`${id}n`} checked={normalize} onChange={(e) => setNormalize(e.value)} />
         </div>
       </div>
     </Dialog>
