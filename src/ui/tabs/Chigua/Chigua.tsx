@@ -1,16 +1,40 @@
+import type { Child } from '@tauri-apps/plugin-shell';
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
+import { useDebounce } from 'primereact/hooks';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { InputText } from 'primereact/inputtext';
 import { ProgressBar } from 'primereact/progressbar';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import { Toast } from 'primereact/toast';
+import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
+import { useEffect, useRef, useState } from 'react';
 
-import { download, normalizeAudios } from '@/lib/asmrone';
-import { formatSize } from '@/lib/format';
+import { getVideoUrls } from '@/lib/chigua';
+
+import SettingsDialog from './SettingsDialog';
+import VideoTable from './VideoTable';
 
 export default function ChiguaTab() {
+  const [inputUrl, url, setUrl] = useDebounce('', 500);
+  const [loading, setLoading] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
+  const [videos, setVideos] = useState<string[]>([]);
+  const [checked, setChecked] = useState<TreeCheckboxSelectionKeys | null>(null);
+  const [child, setChild] = useState<Child>();
+  const toast = useRef<Toast>(null);
+
+  useEffect(() => {
+    if (url) {
+      setLoading(true);
+      getVideoUrls(url)
+        .then(setVideos)
+        .catch(console.error)
+        .finally(() => setLoading(false));
+    }
+  }, [url]);
+
   return (
     <main className="flex-column flex h-full gap-2">
       <div className="flex gap-2">
@@ -19,29 +43,29 @@ export default function ChiguaTab() {
           <InputText
             className="w-full"
             autoFocus
-            placeholder="RJID"
+            placeholder="URL"
             type="search"
             disabled={loading}
-            value={inputRjid}
-            onChange={(e) => setRjid(e.target.value)}
+            value={inputUrl}
+            onChange={(e) => setUrl(e.target.value)}
           />
         </IconField>
       </div>
       <ScrollPanel className="border-200 border-1 border-round min-h-0 flex-auto">
-        <TrackTable tracks={tracks} loading={loading} checked={checked} onCheck={setChecked} />
+        <VideoTable loading={loading} videos={videos} checked={checked} onCheck={setChecked} />
       </ScrollPanel>
       <div className="text-900 mt-2 text-lg font-medium">
-        {total >= 1024
+        {/* {total >= 1024
           ? `${formatSize(downloaded)}/${formatSize(total)}`
-          : `${downloaded}/${total}`}
+          : `${downloaded}/${total}`} */}
       </div>
       <ProgressBar
         className="mb-2 flex-shrink-0"
-        value={total > 0 ? Math.round((downloaded * 100) / total) : 0}
+        //value={total > 0 ? Math.round((downloaded * 100) / total) : 0}
       />
       <div className="flex gap-2">
         <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
-        <Button
+        {/* <Button
           className="flex-1"
           label={child ? 'Cancel' : 'Download'}
           icon={PrimeIcons.DOWNLOAD}
@@ -83,7 +107,7 @@ export default function ChiguaTab() {
               }
             }
           }}
-        />
+        /> */}
       </div>
       <SettingsDialog visible={settingsVisible} onHide={() => setSettingsVisible(false)} />
       <Toast ref={toast} />
