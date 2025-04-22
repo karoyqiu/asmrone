@@ -14,8 +14,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Track, download, getTracks, normalizeAudios } from '@/lib/asmrone';
 import { formatSize } from '@/lib/format';
-import SettingsDialog from '@/ui/SettingsDialog';
-import TrackTable from '@/ui/TrackTable';
+
+import SettingsDialog from './SettingsDialog';
+import TrackTable from './TrackTable';
 
 const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxSelectionKeys) => {
   for (const track of tracks) {
@@ -34,7 +35,7 @@ const flatSelected = (selected: Track[], tracks: Track[], checked: TreeCheckboxS
 const finishLater = () =>
   setTimeout(() => getCurrentWindow().setProgressBar({ status: ProgressBarStatus.None }), 1000);
 
-function AsmrTab() {
+export default function AsmrOne() {
   const [inputRjid, rjid, setRjid] = useDebounce('', 500);
   const [loading, setLoading] = useState(false);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -217,5 +218,3 @@ function AsmrTab() {
     </main>
   );
 }
-
-export default AsmrTab;

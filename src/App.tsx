@@ -1,21 +1,23 @@
 import { TabPanel, TabView } from 'primereact/tabview';
 
 import '@/App.css';
-import AsmrTab from '@/ui/tabs/AsmrTab';
+import AsmrOne from '@/ui/tabs/AsmrOne';
+import Chigua from '@/ui/tabs/Chigua/Chigua';
 
-function App() {
+export default function App() {
   return (
     <TabView
       pt={{
-        root: { className: 'h-full flex flex-column' },
+        root: { className: 'h-full flex flex-column surface-50' },
         panelContainer: { className: 'flex-grow-1 p-2' },
       }}
     >
       <TabPanel className="h-full" header="asmr.one">
-        <AsmrTab />
+        <AsmrOne />
+      </TabPanel>
+      <TabPanel className="h-full" header="Chigua">
+        <Chigua />
       </TabPanel>
     </TabView>
   );
 }
-
-export default App;
