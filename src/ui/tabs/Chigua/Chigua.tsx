@@ -1,37 +1,54 @@
-import type { Child } from '@tauri-apps/plugin-shell';
 import { PrimeIcons } from 'primereact/api';
 import { Button } from 'primereact/button';
-import { useDebounce } from 'primereact/hooks';
+import { useDebounce, useLocalStorage } from 'primereact/hooks';
 import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { InputText } from 'primereact/inputtext';
-import { ProgressBar } from 'primereact/progressbar';
 import { ScrollPanel } from 'primereact/scrollpanel';
 import { Toast } from 'primereact/toast';
 import type { TreeCheckboxSelectionKeys } from 'primereact/tree';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { getVideoUrls } from '@/lib/chigua';
+import { download, getVideoUrls } from '@/lib/chigua';
 
 import SettingsDialog from './SettingsDialog';
 import VideoTable from './VideoTable';
 
 export default function ChiguaTab() {
   const [inputUrl, url, setUrl] = useDebounce('', 500);
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [settingsVisible, setSettingsVisible] = useState(false);
   const [videos, setVideos] = useState<string[]>([]);
   const [checked, setChecked] = useState<TreeCheckboxSelectionKeys | null>(null);
-  const [child, setChild] = useState<Child>();
+  const [downloading, setDownloading] = useState(false);
+  const [streamlink] = useLocalStorage('', 'streamlink');
+  const [dir] = useLocalStorage('', 'chiguaDir');
   const toast = useRef<Toast>(null);
+
+  const selected = useMemo(
+    () => videos.filter((video) => checked && checked[video]?.checked),
+    [videos, checked],
+  );
 
   useEffect(() => {
     if (url) {
-      setLoading(true);
-      getVideoUrls(url)
-        .then(setVideos)
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      try {
+        setLoading(true);
+
+        const u = new URL(url);
+        const paths = u.pathname.split('/');
+        console.log(paths);
+        setCode(paths[2]);
+
+        getVideoUrls(url)
+          .then(setVideos)
+          .catch(console.error)
+          .finally(() => setLoading(false));
+      } catch (e) {
+        console.error(e);
+        setLoading(false);
+      }
     }
   }, [url]);
 
@@ -54,60 +71,20 @@ export default function ChiguaTab() {
       <ScrollPanel className="border-200 border-1 border-round min-h-0 flex-auto">
         <VideoTable loading={loading} videos={videos} checked={checked} onCheck={setChecked} />
       </ScrollPanel>
-      <div className="text-900 mt-2 text-lg font-medium">
-        {/* {total >= 1024
-          ? `${formatSize(downloaded)}/${formatSize(total)}`
-          : `${downloaded}/${total}`} */}
-      </div>
-      <ProgressBar
-        className="mb-2 flex-shrink-0"
-        //value={total > 0 ? Math.round((downloaded * 100) / total) : 0}
-      />
       <div className="flex gap-2">
         <Button icon={PrimeIcons.COG} onClick={() => setSettingsVisible(true)} />
-        {/* <Button
+        <Button
           className="flex-1"
-          label={child ? 'Cancel' : 'Download'}
+          label="Download"
           icon={PrimeIcons.DOWNLOAD}
-          disabled={tracks.length === 0 || !hasChecked}
+          disabled={loading || downloading || selected.length === 0}
+          loading={downloading}
           onClick={async () => {
-            if (child) {
-              await child.kill();
-              setChild(undefined);
-            } else if (checked) {
-              if (selected.length > 0) {
-                setDownloaded(0);
-
-                const t = selected.reduce(
-                  (prev, track) => ('size' in track ? prev + track.size : prev),
-                  0,
-                );
-                setTotal(t);
-
-                const c = await download(
-                  selected,
-                  dir,
-                  proxyOnDownload ? proxy : null,
-                  onDownloadProgress,
-                  () => {
-                    setDownloaded(t);
-                    setRecords((old) => ({ ...old, [id]: Date.now() }));
-
-                    if (normalize) {
-                      normalizeAudios(selected, dir, onNormalizationProgress, finishLater).finally(
-                        () => setChild(undefined),
-                      );
-                    } else {
-                      setChild(undefined);
-                      finishLater();
-                    }
-                  },
-                );
-                setChild(c);
-              }
-            }
+            setDownloading(true);
+            await download(streamlink, code, selected, dir);
+            setDownloading(false);
           }}
-        /> */}
+        />
       </div>
       <SettingsDialog visible={settingsVisible} onHide={() => setSettingsVisible(false)} />
       <Toast ref={toast} />
