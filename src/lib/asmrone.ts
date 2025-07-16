@@ -47,7 +47,7 @@ type Work = {
 };
 
 export const getTracks = async (rjid: string, proxy: string) => {
-  const resp = await fetch(`https://api.asmr.one/api/tracks/${rjid}?v=1`, {
+  const resp = await fetch(`https://api.asmr.one/api/tracks/${rjid}?v=2`, {
     method: 'GET',
     referrer: 'https://www.asmr.one',
     headers: {
@@ -71,7 +71,7 @@ export const getTracks = async (rjid: string, proxy: string) => {
   return tracks;
 };
 
-const makeFullPath = (track: Track, parent: string) => {
+export const makeFullPath = (track: Track, parent: string) => {
   track.gid = crypto.randomUUID().replaceAll('-', '').substring(0, 16);
   track.fullPath = parent ? `${parent}/${track.title}` : track.title;
 

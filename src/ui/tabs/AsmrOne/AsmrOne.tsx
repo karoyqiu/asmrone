@@ -15,6 +15,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Track, download, getTracks, normalizeAudios } from '@/lib/asmrone';
 import { formatSize } from '@/lib/format';
 
+import InputTrackDialog from './InputTrackDialog';
 import SettingsDialog from './SettingsDialog';
 import TrackTable from './TrackTable';
 
@@ -49,6 +50,7 @@ export default function AsmrOne() {
   const [proxyOnDownload] = useLocalStorage(false, 'proxyOnDownload');
   const [normalize] = useLocalStorage(false, 'normalize');
   const [records, setRecords] = useLocalStorage<Record<string, number>>({}, 'records');
+  const [inputTracksVisible, setInputTracksVisible] = useState(false);
   const toast = useRef<Toast>(null);
 
   const hasChecked = !!checked && Object.values(checked).some((value) => value.checked);
@@ -109,7 +111,7 @@ export default function AsmrOne() {
     setTotal(total);
   };
 
-  useEffect(() => {
+  const loadTracks = () => {
     if (id) {
       setLoading(true);
       getTracks(id, proxy)
@@ -130,7 +132,9 @@ export default function AsmrOne() {
     } else {
       setTracks([]);
     }
-  }, [id, proxy]);
+  };
+
+  useEffect(loadTracks, [id, proxy]);
 
   useEffect(() => {
     getCurrentWindow().setProgressBar({
@@ -154,6 +158,22 @@ export default function AsmrOne() {
             onChange={(e) => setRjid(e.target.value)}
           />
         </IconField>
+        <Button icon={PrimeIcons.REFRESH} label="Load" disabled={loading} onClick={loadTracks} />
+        <Button
+          label="Input tracks"
+          disabled={loading}
+          onClick={() => setInputTracksVisible(true)}
+        />
+        <InputTrackDialog
+          visible={inputTracksVisible}
+          onHide={(value) => {
+            if (value) {
+              setTracks(value);
+            }
+
+            setInputTracksVisible(false);
+          }}
+        />
       </div>
       <ScrollPanel className="border-200 border-1 border-round min-h-0 flex-auto">
         <TrackTable tracks={tracks} loading={loading} checked={checked} onCheck={setChecked} />

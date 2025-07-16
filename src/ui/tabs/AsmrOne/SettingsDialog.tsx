@@ -22,8 +22,8 @@ export default function SettingsDialog(props: SettingsDialogProps) {
 
   return (
     <Dialog className="w-30rem" header="Settings" visible={visible} onHide={onHide} dismissableMask>
-      <div className="flex flex-column gap-4">
-        <div className="flex flex-column gap-2">
+      <div className="flex-column flex gap-4">
+        <div className="flex-column flex gap-2">
           <label htmlFor={`${id}d`}>Download directory</label>
           <div className="p-inputgroup">
             <InputText id={`${id}d`} value={dir} readOnly />
@@ -39,11 +39,11 @@ export default function SettingsDialog(props: SettingsDialogProps) {
             />
           </div>
         </div>
-        <div className="flex flex-column gap-2">
+        <div className="flex-column flex gap-2">
           <label htmlFor={`${id}p`}>Proxy</label>
           <InputText id={`${id}p`} value={proxy} onChange={(e) => setProxy(e.target.value)} />
         </div>
-        <div className="flex align-items-center justify-content-between">
+        <div className="align-items-center justify-content-between flex">
           <label htmlFor={`${id}pod`}>Use proxy when downloading</label>
           <InputSwitch
             id={`${id}pod`}
@@ -51,7 +51,7 @@ export default function SettingsDialog(props: SettingsDialogProps) {
             onChange={(e) => setProxyOnDownload(e.value)}
           />
         </div>
-        <div className="flex align-items-center justify-content-between">
+        <div className="align-items-center justify-content-between flex">
           <label htmlFor={`${id}n`}>Normalize audio files after being downloaded</label>
           <InputSwitch id={`${id}n`} checked={normalize} onChange={(e) => setNormalize(e.value)} />
         </div>
