@@ -3,8 +3,8 @@ import { Tree, type TreeCheckboxSelectionKeys } from 'primereact/tree';
 import type { TreeNode } from 'primereact/treenode';
 import { useMemo } from 'react';
 
-import type { Track } from '../lib/asmrone';
-import { formatSize } from '../lib/format';
+import type { Track } from '@/lib/asmrone';
+import { formatSize } from '@/lib/format';
 
 type TrackNode = Omit<TreeNode, 'children' | 'data'> & {
   children?: TrackNode[];

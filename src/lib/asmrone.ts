@@ -119,7 +119,7 @@ const getFullDir = (tracks: Track[], dir: string) => {
   return join(dir, subdir);
 };
 
-type OnDownloadProgress = (gid: string, downloaded: number, total: number) => void;
+export type OnDownloadProgress = (gid: string, downloaded: number, total: number) => void;
 
 export const download = async (
   tracks: Track[],
